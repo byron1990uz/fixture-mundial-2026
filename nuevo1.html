@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Fixture Mundial 2026</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      max-width: 850px;
+      margin: 12px auto;
+      padding: 16px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.10);
+    }
+
+    .fase {
+      font-size: 14px;
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    .equipos {
+      font-size: 22px;
+      text-align: center;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .detalle {
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .estado {
+      text-align: center;
+      margin-top: 8px;
+      font-weight: bold;
+      color: #16a34a;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Fixture Copa Mundial FIFA 2026</h1>
+
+<div id="fixture"></div>
+
+<script>
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTI-SJcBOdYUf0BOGWuKNRYyofLFBZdDdYlTNjklAg7UYVjI_rHuheHtFyvLTH8rw/pub?gid=534628115&single=true&output=csv";
+
+async function cargarDatos() {
+  const res = await fetch(urlCSV);
+  const texto = await res.text();
+
+  const filas = texto.trim().split("\n").map(f => f.split(","));
+  const headers = filas[0].map(h => h.trim());
+
+  const datos = filas.slice(1).map(fila => {
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = fila[i] || "");
+    return obj;
+  });
+
+  mostrarFixture(datos);
+}
+
+function mostrarFixture(partidos) {
+  const contenedor = document.getElementById("fixture");
+  contenedor.innerHTML = "";
+
+  partidos.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="fase">${p.fase || ""} ${p.grupo ? "- Grupo " + p.grupo : ""}</div>
+
+      <div class="equipos">
+        ${p.equipo1 || "Por definir"}
+        ${p.goles1 || "-"} : ${p.goles2 || "-"}
+        ${p.equipo2 || "Por definir"}
+      </div>
+
+      <div class="detalle">
+        ${p.fecha || ""} | ${p.hora || ""}
+      </div>
+
+      <div class="detalle">
+        ${p.estadio || ""} ${p.ciudad ? "- " + p.ciudad : ""}
+      </div>
+
+      <div class="estado">
+        ${p.estado || "Pendiente"}
+      </div>
+    `;
+
+    contenedor.appendChild(card);
+  });
+}
+
+cargarDatos();
+</script>
+
+</body>
+</html>
