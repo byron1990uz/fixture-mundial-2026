@@ -330,7 +330,7 @@
 </head>
 <body>
 
-<h1>🏆 MUNDUALITO ADN 2026 - PS5- 🏆</h1>
+<h1>🏆 MUNDIALITO ADN 2026 - PS5 🏆</h1>
 
 <div class="switch-container">
   <div class="switch-buttons">
@@ -343,6 +343,8 @@
   <div class="grupo-botones">
     <button class="btn-filtro activo" data-filtro="todos">📋 Todos los partidos</button>
     <button class="btn-filtro" data-filtro="Grupo">🏆 Fase de Grupos</button>
+    <!-- NUEVO BOTÓN: Ronda de 32 (Dieciseisavos) -->
+    <button class="btn-filtro btn-filtro-especial" data-filtro="Ronda32">🔄 Ronda de 32 (Dieciseisavos)</button>
     <button class="btn-filtro btn-filtro-especial" data-filtro="Octavos">⚽ Octavos de Final</button>
     <button class="btn-filtro btn-filtro-especial" data-filtro="Cuartos">🎯 Cuartos de Final</button>
     <button class="btn-filtro btn-filtro-especial" data-filtro="Semifinal">🔥 Semifinales</button>
@@ -360,6 +362,10 @@
       <button class="btn-filtro" data-grupo="F">Grupo F</button>
       <button class="btn-filtro" data-grupo="G">Grupo G</button>
       <button class="btn-filtro" data-grupo="H">Grupo H</button>
+      <button class="btn-filtro" data-grupo="I">Grupo I</button>
+      <button class="btn-filtro" data-grupo="J">Grupo J</button>
+      <button class="btn-filtro" data-grupo="K">Grupo K</button>
+      <button class="btn-filtro" data-grupo="L">Grupo L</button>
     </div>
   </div>
   
@@ -522,7 +528,7 @@ function mostrarTablaPosiciones() {
     html += `
       <div class="tabla-grupo">
         <div class="tabla-grupo-titulo">🏆 Grupo ${grupo}</div>
-        <table>
+        </table>
           <thead>
             <tr>
               <th>Pos</th>
@@ -554,7 +560,7 @@ function mostrarTablaPosiciones() {
           <td>${equipo.gc}</td>
           <td>${equipo.dif}</td>
           <td><strong>${equipo.puntos}</strong></td>
-        </tr>
+         </tr>
       `;
     });
     
@@ -569,15 +575,29 @@ function mostrarTablaPosiciones() {
   container.innerHTML = html;
 }
 
-// Funciones del fixture
+// ⭐ FUNCIÓN DE FILTRADO ACTUALIZADA PARA INCLUIR RONDA DE 32 ⭐
 function filtrarPartidos() {
   let filtrados = todosLosPartidos;
   
   if (filtroActual !== "todos") {
     if (filtroActual === "Grupo") {
       filtrados = filtrados.filter(p => p.fase && p.fase.toLowerCase().includes("grupo"));
+    } else if (filtroActual === "Ronda32") {
+      // Buscar diferentes formas de escribir Ronda de 32
+      filtrados = filtrados.filter(p => {
+        const fase = (p.fase || "").toLowerCase();
+        return fase.includes("ronda 32") || 
+               fase.includes("ronda de 32") || 
+               fase.includes("dieciseisavos") ||
+               fase.includes("32avos") ||
+               fase.includes("ronda32");
+      });
     } else {
-      filtrados = filtrados.filter(p => p.fase && p.fase.toLowerCase().includes(filtroActual.toLowerCase()));
+      filtrados = filtrados.filter(p => {
+        const fase = (p.fase || "").toLowerCase();
+        const filtro = filtroActual.toLowerCase();
+        return fase.includes(filtro);
+      });
     }
   }
   
@@ -595,7 +615,11 @@ function mostrarFixture() {
   
   let textoInfo = `Mostrando ${partidosFiltrados.length} partidos`;
   if (filtroActual !== "todos") {
-    textoInfo += ` de ${filtroActual === "Grupo" ? "Fase de Grupos" : filtroActual}`;
+    if (filtroActual === "Ronda32") {
+      textoInfo += ` de Ronda de 32 (Dieciseisavos)`;
+    } else {
+      textoInfo += ` de ${filtroActual === "Grupo" ? "Fase de Grupos" : filtroActual}`;
+    }
   }
   if (grupoActual !== "todos" && filtroActual === "Grupo") {
     textoInfo += ` - Grupo ${grupoActual}`;
