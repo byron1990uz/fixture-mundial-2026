@@ -6,141 +6,153 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f6f8;
+      background: #f3f4f6;
+      margin: 0;
       padding: 20px;
+	  
+	        /* FONDO PERSONALIZADO */
+      background:
+        linear-gradient(rgba(0,0,0,.70), rgba(0,0,0,.70)),
+        url('./fondo AND MUNDIAL.png');
+
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+
+      color: white;
+
+      min-height: 100vh;
     }
 
     h1 {
       text-align: center;
-      color: #111827;
+      font-size: 42px;
+      margin-top: 30px;
+      margin-bottom: 10px;
+
+      text-shadow: 0 4px 10px rgba(0,0,0,.5);
     }
 
-    .filtros {
+	.subtitulo {
       text-align: center;
+      font-size: 18px;
+      color: rgba(255,255,255,.85);
+
+      margin-bottom: 40px;
+    }
+	
+	.contenedor {
+      max-width: 1200px;
+      margin: auto;
+    }
+	
+	
+    .card {
+      background: rgba(255,255,255,0.10);
+
+      backdrop-filter: blur(10px);
+
+      border-radius: 18px;
+
+      padding: 20px;
+
       margin-bottom: 20px;
+
+      border: 1px solid rgba(255,255,255,.15);
+
+      box-shadow: 0 8px 25px rgba(0,0,0,.30);
     }
 
-    input, select {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
 
-    .partido {
-      background: white;
-      padding: 15px;
-      margin: 12px auto;
-      max-width: 800px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    .fase {
+      font-size: 14px;
+      color: #2563eb;
+      font-weight: bold;
     }
 
     .equipos {
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 22px;
       text-align: center;
+      font-weight: bold;
+      margin: 10px 0;
     }
 
     .detalle {
       text-align: center;
       color: #555;
-      margin-top: 8px;
+      font-size: 14px;
     }
 
     .estado {
       text-align: center;
       margin-top: 8px;
       font-weight: bold;
-      color: #0066cc;
+      color: #16a34a;
     }
   </style>
 </head>
 <body>
 
-  <h1>Fixture Copa Mundial FIFA 2026</h1>
+<h1>Fixture Copa Mundial FIFA 2026</h1>
 
-  <div class="filtros">
-    <input type="text" id="buscar" placeholder="Buscar equipo...">
-    <select id="fase">
-      <option value="">Todas las fases</option>
-      <option value="Grupos">Grupos</option>
-      <option value="16avos">16avos</option>
-      <option value="Octavos">Octavos</option>
-      <option value="Cuartos">Cuartos</option>
-      <option value="Semifinal">Semifinal</option>
-      <option value="Final">Final</option>
-    </select>
-  </div>
+<div id="fixture"></div>
 
-  <div id="fixture"></div>
+<script>
+const urlCSV = https://docs.google.com/spreadsheets/d/e/2PACX-1vQM2-mAmwqFb7_VbRjnbNFgyzfM4BDdadv2kxRqQXY8B07vqvAjSG1GbqbXI10EEA/pub?output=csv;
 
-  <script>
-    const urlCSV = https://docs.google.com/spreadsheets/d/e/2PACX-1vSyf6Uf79ysHr1lCKCodHGao4ZfI2vDdR_IFR7OuHnosJhZfPVA1TTjcl5CiaRPmCRdtcYdJ_060zKG/pub?output=csv;
+async function cargarDatos() {
+  const res = await fetch(urlCSV);
+  const texto = await res.text();
 
-    async function cargarFixture() {
-      const respuesta = await fetch(urlCSV);
-      const texto = await respuesta.text();
+  const filas = texto.trim().split("\n").map(f => f.split(","));
+  const headers = filas[0].map(h => h.trim());
 
-      const filas = texto.trim().split("\n").map(fila => fila.split(","));
-      const encabezados = filas[0];
+  const datos = filas.slice(1).map(fila => {
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = fila[i] || "");
+    return obj;
+  });
 
-      const partidos = filas.slice(1).map(fila => {
-        let obj = {};
-        encabezados.forEach((col, i) => {
-          obj[col.trim()] = fila[i]?.trim() || "";
-        });
-        return obj;
-      });
+  mostrarFixture(datos);
+}
 
-      mostrarFixture(partidos);
+function mostrarFixture(partidos) {
+  const contenedor = document.getElementById("fixture");
+  contenedor.innerHTML = "";
 
-      document.getElementById("buscar").addEventListener("input", () => mostrarFixture(partidos));
-      document.getElementById("fase").addEventListener("change", () => mostrarFixture(partidos));
-    }
+  partidos.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-    function mostrarFixture(partidos) {
-      const contenedor = document.getElementById("fixture");
-      const buscar = document.getElementById("buscar").value.toLowerCase();
-      const fase = document.getElementById("fase").value;
+    card.innerHTML = `
+      <div class="fase">${p.fase || ""} ${p.grupo ? "- Grupo " + p.grupo : ""}</div>
 
-      contenedor.innerHTML = "";
+      <div class="equipos">
+        ${p.equipo1 || "Por definir"}
+        ${p.goles1 || "-"} : ${p.goles2 || "-"}
+        ${p.equipo2 || "Por definir"}
+      </div>
 
-      const filtrados = partidos.filter(p => {
-        const coincideEquipo =
-          p.equipo1.toLowerCase().includes(buscar) ||
-          p.equipo2.toLowerCase().includes(buscar);
+      <div class="detalle">
+        ${p.fecha || ""} | ${p.hora || ""}
+      </div>
 
-        const coincideFase = fase === "" || p.fase === fase;
+      <div class="detalle">
+        ${p.estadio || ""} ${p.ciudad ? "- " + p.ciudad : ""}
+      </div>
 
-        return coincideEquipo && coincideFase;
-      });
+      <div class="estado">
+        ${p.estado || "Pendiente"}
+      </div>
+    `;
 
-      filtrados.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "partido";
+    contenedor.appendChild(card);
+  });
+}
 
-        card.innerHTML = `
-          <div class="equipos">
-            ${p.equipo1} ${p.goles1 || "-"} vs ${p.goles2 || "-"} ${p.equipo2}
-          </div>
-          <div class="detalle">
-            ${p.fecha} | ${p.hora} | ${p.grupo} | ${p.fase}
-          </div>
-          <div class="detalle">
-            ${p.estadio} - ${p.ciudad}, ${p.pais}
-          </div>
-          <div class="estado">
-            ${p.estado}
-          </div>
-        `;
-
-        contenedor.appendChild(card);
-      });
-    }
-
-    cargarFixture();
-  </script>
+cargarDatos();
+</script>
 
 </body>
 </html>
