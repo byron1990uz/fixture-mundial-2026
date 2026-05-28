@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mundial 2026 - Fixture y Tabla de Posiciones</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Switch de vista */
+    .switch-container {
+      max-width: 900px;
+      margin: 0 auto 20px auto;
+      background: white;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .switch-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn-switch {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-switch:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-switch.activo {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Contenedor de filtros */
+    .filtros-container {
+      max-width: 900px;
+      margin: 0 auto 20px auto;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: none;
+    }
+
+    .filtros-container.visible {
+      display: block;
+    }
+
+    .grupo-botones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+      justify-content: center;
+    }
+
+    .btn-filtro {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-filtro:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .btn-filtro.activo {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-filtro-especial {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .info-partidos {
+      text-align: center;
+      margin-top: 10px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    /* Tarjetas de partidos */
+    .card {
+      background: white;
+      max-width: 850px;
+      margin: 12px auto;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fase {
+      font-size: 13px;
+      color: #667eea;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .equipos {
+      font-size: 24px;
+      text-align: center;
+      font-weight: bold;
+      margin: 15px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .equipo {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .goles {
+      background: #f3f4f6;
+      padding: 8px 15px;
+      border-radius: 30px;
+      font-size: 20px;
+    }
+
+    .detalle {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      margin: 5px 0;
+    }
+
+    .estado {
+      text-align: center;
+      margin-top: 12px;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 20px;
+      display: inline-block;
+      width: auto;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .estado-pendiente {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .estado-finalizado {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .estado-en-vivo {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Tabla de posiciones */
+    .tabla-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease;
+      padding: 20px;
+    }
+
+    .tabla-grupo {
+      margin-bottom: 30px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .tabla-grupo-titulo {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 12px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 8px;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    td {
+      color: #6b7280;
+    }
+
+    .equipo-nombre {
+      font-weight: 600;
+      color: #374151;
+      text-align: left;
+    }
+
+    .posicion {
+      font-weight: bold;
+      width: 50px;
+    }
+
+    .posicion-1 { background: linear-gradient(135deg, #ffd70020, #ffed4e20); }
+    .posicion-2 { background: linear-gradient(135deg, #c0c0c020, #e8e8e820); }
+    .posicion-3 { background: linear-gradient(135deg, #cd7f3220, #e8a87c20); }
+
+    .sin-resultados {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 14px;
+      max-width: 850px;
+      margin: 20px auto;
+      color: #6b7280;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: white;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .equipos {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .btn-filtro, .btn-switch {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      th, td {
+        padding: 6px 4px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🏆 Copa Mundial FIFA 2026 🏆</h1>
+
+<div class="switch-container">
+  <div class="switch-buttons">
+    <button class="btn-switch activo" data-vista="fixture">📋 Fixture de Partidos</button>
+    <button class="btn-switch" data-vista="tabla">📊 Tabla de Posiciones</button>
+  </div>
+</div>
+
+<div class="filtros-container" id="filtros-fixture">
+  <div class="grupo-botones">
+    <button class="btn-filtro activo" data-filtro="todos">📋 Todos los partidos</button>
+    <button class="btn-filtro" data-filtro="Grupo">🏆 Fase de Grupos</button>
+    <button class="btn-filtro btn-filtro-especial" data-filtro="Octavos">⚽ Octavos de Final</button>
+    <button class="btn-filtro btn-filtro-especial" data-filtro="Cuartos">🎯 Cuartos de Final</button>
+    <button class="btn-filtro btn-filtro-especial" data-filtro="Semifinal">🔥 Semifinales</button>
+    <button class="btn-filtro btn-filtro-especial" data-filtro="Final">🏆 Final</button>
+  </div>
+  
+  <div id="filtro-grupos" style="display: none;">
+    <div class="grupo-botones">
+      <button class="btn-filtro" data-grupo="todos">Todos los grupos</button>
+      <button class="btn-filtro" data-grupo="A">Grupo A</button>
+      <button class="btn-filtro" data-grupo="B">Grupo B</button>
+      <button class="btn-filtro" data-grupo="C">Grupo C</button>
+      <button class="btn-filtro" data-grupo="D">Grupo D</button>
+      <button class="btn-filtro" data-grupo="E">Grupo E</button>
+      <button class="btn-filtro" data-grupo="F">Grupo F</button>
+      <button class="btn-filtro" data-grupo="G">Grupo G</button>
+      <button class="btn-filtro" data-grupo="H">Grupo H</button>
+    </div>
+  </div>
+  
+  <div class="info-partidos" id="info-partidos">
+    Mostrando todos los partidos
+  </div>
+</div>
+
+<div id="contenido"></div>
+
+<script>
+// URLs de las hojas de cálculo
+const urlFixture = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTI-SJcBOdYUf0BOGWuKNRYyofLFBZdDdYlTNjklAg7UYVjI_rHuheHtFyvLTH8rw/pub?gid=534628115&single=true&output=csv";
+
+// ⚠️ CAMBIA ESTA URL POR LA DE TU HOJA DE POSICIONES ⚠️
+const urlTabla = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTI-SJcBOdYUf0BOGWuKNRYyofLFBZdDdYlTNjklAg7UYVjI_rHuheHtFyvLTH8rw/pub?gid=30061453&single=true&output=csv";
+
+let todosLosPartidos = [];
+let todasLasTablas = {};
+let vistaActual = "fixture";
+let filtroActual = "todos";
+let grupoActual = "todos";
+
+function parseCSV(texto) {
+  const lines = texto.trim().split("\n");
+  const filas = [];
+  
+  for (let line of lines) {
+    const valores = [];
+    let dentroComillas = false;
+    let valorActual = "";
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        dentroComillas = !dentroComillas;
+      } else if (char === ',' && !dentroComillas) {
+        valores.push(valorActual.trim());
+        valorActual = "";
+      } else {
+        valorActual += char;
+      }
+    }
+    valores.push(valorActual.trim());
+    filas.push(valores);
+  }
+  
+  return filas;
+}
+
+async function cargarFixture() {
+  try {
+    const res = await fetch(urlFixture);
+    const texto = await res.text();
+    const filas = parseCSV(texto);
+    
+    if (filas.length < 2) throw new Error("No hay datos suficientes");
+    
+    const headers = filas[0];
+    const datos = filas.slice(1).map(fila => {
+      let obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = fila[i] || "";
+      });
+      return obj;
+    });
+    
+    todosLosPartidos = datos;
+    return true;
+  } catch (error) {
+    console.error("Error cargando fixture:", error);
+    return false;
+  }
+}
+
+// ⭐ FUNCIÓN ACTUALIZADA PARA TUS COLUMNAS ⭐
+async function cargarTablaPosiciones() {
+  try {
+    const res = await fetch(urlTabla);
+    const texto = await res.text();
+    const filas = parseCSV(texto);
+    
+    if (filas.length < 2) {
+      document.getElementById("contenido").innerHTML = '<div class="sin-resultados">⚠️ No se encontraron datos en la tabla de posiciones. Verifica la URL de tu hoja de cálculo.</div>';
+      return false;
+    }
+    
+    const headers = filas[0];
+    const datos = filas.slice(1).map(fila => {
+      let obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = fila[i] || "";
+      });
+      return obj;
+    });
+    
+    todasLasTablas = {};
+    
+    datos.forEach(row => {
+      // Obtener grupo (puede ser 'grupo' o 'Grupo')
+      const grupo = row.grupo || row.Grupo || "A";
+      
+      if (!todasLasTablas[grupo]) {
+        todasLasTablas[grupo] = [];
+      }
+      
+      // Mapeo EXACTO de tus columnas
+      todasLasTablas[grupo].push({
+        posicion: row.pos_base || row.Pos_base || row.pos_base || "-",
+        equipo: row.equipo || row.Equipo || "Sin nombre",
+        pj: row.PJ || row.pj || "0",
+        pg: row.PG || row.pg || "0",
+        pe: row.PE || row.pe || "0",
+        pp: row.PP || row.pp || "0",
+        gf: row.GF || row.gf || "0",
+        gc: row.GC || row.gc || "0",
+        dif: row.DG || row.dg || "0",
+        puntos: row.PTS || row.pts || "0"
+      });
+    });
+    
+    // Ordenar cada grupo por puntos y luego por diferencia de gol
+    for (let grupo in todasLasTablas) {
+      todasLasTablas[grupo].sort((a, b) => {
+        if (parseInt(a.puntos) !== parseInt(b.puntos)) {
+          return parseInt(b.puntos) - parseInt(a.puntos);
+        }
+        return parseInt(b.dif) - parseInt(a.dif);
+      });
+      
+      // Actualizar posiciones después del ordenamiento (sobrescribe pos_base)
+      todasLasTablas[grupo].forEach((equipo, idx) => {
+        equipo.posicion = idx + 1;
+      });
+    }
+    
+    console.log("Tablas cargadas:", Object.keys(todasLasTablas));
+    return true;
+  } catch (error) {
+    console.error("Error cargando tabla:", error);
+    document.getElementById("contenido").innerHTML = `<div class="sin-resultados">❌ Error al cargar la tabla de posiciones: ${error.message}<br><br>Verifica que la URL de tu hoja sea correcta y esté publicada.</div>`;
+    return false;
+  }
+}
+
+function mostrarTablaPosiciones() {
+  const container = document.getElementById("contenido");
+  const grupos = Object.keys(todasLasTablas).sort();
+  
+  if (grupos.length === 0) {
+    container.innerHTML = `<div class="sin-resultados">📊 No hay datos de tabla de posiciones disponibles</div>`;
+    return;
+  }
+  
+  let html = `<div class="tabla-container">`;
+  
+  grupos.forEach(grupo => {
+    const equipos = todasLasTablas[grupo];
+    html += `
+      <div class="tabla-grupo">
+        <div class="tabla-grupo-titulo">🏆 Grupo ${grupo}</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Equipo</th>
+              <th>PJ</th>
+              <th>PG</th>
+              <th>PE</th>
+              <th>PP</th>
+              <th>GF</th>
+              <th>GC</th>
+              <th>DG</th>
+              <th>PTS</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    equipos.forEach((equipo, idx) => {
+      const posClass = idx === 0 ? "posicion-1" : idx === 1 ? "posicion-2" : idx === 2 ? "posicion-3" : "";
+      html += `
+        <tr class="${posClass}">
+          <td class="posicion"><strong>${equipo.posicion}</strong></td>
+          <td class="equipo-nombre">${equipo.equipo}</td>
+          <td>${equipo.pj}</td>
+          <td>${equipo.pg}</td>
+          <td>${equipo.pe}</td>
+          <td>${equipo.pp}</td>
+          <td>${equipo.gf}</td>
+          <td>${equipo.gc}</td>
+          <td>${equipo.dif}</td>
+          <td><strong>${equipo.puntos}</strong></td>
+        </tr>
+      `;
+    });
+    
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  });
+  
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+// Funciones del fixture
+function filtrarPartidos() {
+  let filtrados = todosLosPartidos;
+  
+  if (filtroActual !== "todos") {
+    if (filtroActual === "Grupo") {
+      filtrados = filtrados.filter(p => p.fase && p.fase.toLowerCase().includes("grupo"));
+    } else {
+      filtrados = filtrados.filter(p => p.fase && p.fase.toLowerCase().includes(filtroActual.toLowerCase()));
+    }
+  }
+  
+  if (grupoActual !== "todos" && filtroActual === "Grupo") {
+    filtrados = filtrados.filter(p => p.grupo && p.grupo.toUpperCase() === grupoActual.toUpperCase());
+  }
+  
+  return filtrados;
+}
+
+function mostrarFixture() {
+  const contenedor = document.getElementById("contenido");
+  const partidosFiltrados = filtrarPartidos();
+  const infoDiv = document.getElementById("info-partidos");
+  
+  let textoInfo = `Mostrando ${partidosFiltrados.length} partidos`;
+  if (filtroActual !== "todos") {
+    textoInfo += ` de ${filtroActual === "Grupo" ? "Fase de Grupos" : filtroActual}`;
+  }
+  if (grupoActual !== "todos" && filtroActual === "Grupo") {
+    textoInfo += ` - Grupo ${grupoActual}`;
+  }
+  infoDiv.textContent = textoInfo;
+  
+  if (partidosFiltrados.length === 0) {
+    contenedor.innerHTML = `
+      <div class="sin-resultados">
+        🏟️ No hay partidos para mostrar en esta fase.<br>
+        ¡Pronto se actualizará el fixture!
+      </div>
+    `;
+    return;
+  }
+  
+  contenedor.innerHTML = "";
+  
+  partidosFiltrados.forEach((p, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.animationDelay = `${index * 0.05}s`;
+    
+    let estadoClass = "estado-pendiente";
+    let estadoTexto = p.estado || "Pendiente";
+    
+    if (estadoTexto.toLowerCase().includes("finalizado") || estadoTexto.toLowerCase().includes("terminado")) {
+      estadoClass = "estado-finalizado";
+    } else if (estadoTexto.toLowerCase().includes("vivo") || estadoTexto.toLowerCase().includes("directo")) {
+      estadoClass = "estado-en-vivo";
+    }
+    
+    const goles1 = p.goles1 && p.goles1 !== "-" ? p.goles1 : "-";
+    const goles2 = p.goles2 && p.goles2 !== "-" ? p.goles2 : "-";
+    
+    card.innerHTML = `
+      <div class="fase">
+        ${p.fase || "Partido"} ${p.grupo ? `- Grupo ${p.grupo}` : ""}
+      </div>
+
+      <div class="equipos">
+        <div class="equipo">${p.equipo1 || "Por definir"}</div>
+        <div class="goles">${goles1} : ${goles2}</div>
+        <div class="equipo">${p.equipo2 || "Por definir"}</div>
+      </div>
+
+      <div class="detalle">
+        📅 ${p.fecha || "Fecha por confirmar"} | ⏰ ${p.hora || "Horario por confirmar"}
+      </div>
+
+      <div class="detalle">
+        🏟️ ${p.estadio || "Estadio por definir"} ${p.ciudad ? `- ${p.ciudad}` : ""}
+      </div>
+
+      <div class="estado ${estadoClass}">
+        ${estadoTexto}
+      </div>
+    `;
+    
+    contenedor.appendChild(card);
+  });
+}
+
+function configurarEventos() {
+  document.querySelectorAll("[data-vista]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      document.querySelectorAll("[data-vista]").forEach(b => b.classList.remove("activo"));
+      btn.classList.add("activo");
+      vistaActual = btn.dataset.vista;
+      
+      const filtrosDiv = document.getElementById("filtros-fixture");
+      if (vistaActual === "fixture") {
+        filtrosDiv.classList.add("visible");
+        mostrarFixture();
+      } else {
+        filtrosDiv.classList.remove("visible");
+        mostrarTablaPosiciones();
+      }
+    });
+  });
+  
+  document.querySelectorAll("[data-filtro]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      document.querySelectorAll("[data-filtro]").forEach(b => b.classList.remove("activo"));
+      btn.classList.add("activo");
+      filtroActual = btn.dataset.filtro;
+      
+      if (filtroActual !== "Grupo") {
+        grupoActual = "todos";
+        document.querySelectorAll("[data-grupo]").forEach(b => b.classList.remove("activo"));
+        const btnTodosGrupos = document.querySelector("[data-grupo='todos']");
+        if (btnTodosGrupos) btnTodosGrupos.classList.add("activo");
+      }
+      
+      mostrarFixture();
+    });
+  });
+  
+  document.querySelectorAll("[data-grupo]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      if (filtroActual === "Grupo") {
+        document.querySelectorAll("[data-grupo]").forEach(b => b.classList.remove("activo"));
+        btn.classList.add("activo");
+        grupoActual = btn.dataset.grupo;
+        mostrarFixture();
+      }
+    });
+  });
+}
+
+function configurarFiltrosGrupos() {
+  const tieneGrupos = todosLosPartidos.some(p => p.fase && p.fase.includes("Grupo"));
+  const filtroGruposDiv = document.getElementById("filtro-grupos");
+  
+  if (tieneGrupos) {
+    filtroGruposDiv.style.display = "block";
+  }
+}
+
+async function init() {
+  document.getElementById("contenido").innerHTML = '<div class="loading">📡 Cargando datos del Mundial 2026...</div>';
+  
+  await Promise.all([cargarFixture(), cargarTablaPosiciones()]);
+  
+  configurarFiltrosGrupos();
+  configurarEventos();
+  
+  document.getElementById("filtros-fixture").classList.add("visible");
+  mostrarFixture();
+}
+
+init();
+</script>
+
+</body>
+</html>
