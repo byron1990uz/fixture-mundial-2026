@@ -224,13 +224,13 @@
       50% { opacity: 0.7; }
     }
 
-    /* Tabla de posiciones */
+    /* Tabla de posiciones - Estilos mejorados */
     .tabla-container {
       max-width: 1200px;
       margin: 0 auto;
       background: white;
       border-radius: 16px;
-      overflow: hidden;
+      overflow-x: auto;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       animation: fadeIn 0.5s ease;
       padding: 20px;
@@ -240,7 +240,7 @@
       margin-bottom: 30px;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
-      overflow: hidden;
+      overflow-x: auto;
     }
 
     .tabla-grupo-titulo {
@@ -255,6 +255,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 600px;
     }
 
     th, td {
@@ -288,6 +289,7 @@
     .posicion-1 { background: linear-gradient(135deg, #ffd70020, #ffed4e20); }
     .posicion-2 { background: linear-gradient(135deg, #c0c0c020, #e8e8e820); }
     .posicion-3 { background: linear-gradient(135deg, #cd7f3220, #e8a87c20); }
+    .posicion-4 { background: #fecaca20; }
 
     .sin-resultados {
       text-align: center;
@@ -304,6 +306,17 @@
       padding: 40px;
       color: white;
       font-size: 18px;
+    }
+
+    /* Advertencia de depuración */
+    .debug-info {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 10px;
+      margin: 10px auto;
+      max-width: 900px;
+      font-size: 12px;
+      display: none;
     }
 
     @media (max-width: 768px) {
@@ -343,7 +356,6 @@
   <div class="grupo-botones">
     <button class="btn-filtro activo" data-filtro="todos">📋 Todos los partidos</button>
     <button class="btn-filtro" data-filtro="Grupo">🏆 Fase de Grupos</button>
-    <!-- NUEVO BOTÓN: Ronda de 32 (Dieciseisavos) -->
     <button class="btn-filtro btn-filtro-especial" data-filtro="Ronda32">🔄 Ronda de 32 (Dieciseisavos)</button>
     <button class="btn-filtro btn-filtro-especial" data-filtro="Octavos">⚽ Octavos de Final</button>
     <button class="btn-filtro btn-filtro-especial" data-filtro="Cuartos">🎯 Cuartos de Final</button>
@@ -379,8 +391,6 @@
 <script>
 // URLs de las hojas de cálculo
 const urlFixture = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTI-SJcBOdYUf0BOGWuKNRYyofLFBZdDdYlTNjklAg7UYVjI_rHuheHtFyvLTH8rw/pub?gid=534628115&single=true&output=csv";
-
-// ⚠️ CAMBIA ESTA URL POR LA DE TU HOJA DE POSICIONES ⚠️
 const urlTabla = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTI-SJcBOdYUf0BOGWuKNRYyofLFBZdDdYlTNjklAg7UYVjI_rHuheHtFyvLTH8rw/pub?gid=30061453&single=true&output=csv";
 
 let todosLosPartidos = [];
@@ -389,11 +399,26 @@ let vistaActual = "fixture";
 let filtroActual = "todos";
 let grupoActual = "todos";
 
+// Limpiar texto de caracteres no deseados
+function limpiarTexto(texto) {
+  if (!texto) return "";
+  return texto
+    .replace(/\r?\n|\r/g, ' ')  // Reemplazar saltos de línea por espacios
+    .replace(/\s+/g, ' ')        // Reemplazar múltiples espacios por uno solo
+    .replace(/[*_]/g, '')        // Eliminar caracteres markdown
+    .trim();
+}
+
 function parseCSV(texto) {
-  const lines = texto.trim().split("\n");
+  // Limpiar caracteres BOM y retornos de carro
+  texto = texto.replace(/^\uFEFF/, '');
+  
+  const lines = texto.trim().split(/\r?\n/);
   const filas = [];
   
   for (let line of lines) {
+    if (line.trim() === "") continue;
+    
     const valores = [];
     let dentroComillas = false;
     let valorActual = "";
@@ -404,14 +429,17 @@ function parseCSV(texto) {
       if (char === '"') {
         dentroComillas = !dentroComillas;
       } else if (char === ',' && !dentroComillas) {
-        valores.push(valorActual.trim());
+        valores.push(limpiarTexto(valorActual));
         valorActual = "";
       } else {
         valorActual += char;
       }
     }
-    valores.push(valorActual.trim());
-    filas.push(valores);
+    valores.push(limpiarTexto(valorActual));
+    
+    if (valores.length > 0 && valores.some(v => v !== "")) {
+      filas.push(valores);
+    }
   }
   
   return filas;
@@ -429,7 +457,8 @@ async function cargarFixture() {
     const datos = filas.slice(1).map(fila => {
       let obj = {};
       headers.forEach((h, i) => {
-        obj[h] = fila[i] || "";
+        const headerLimpio = limpiarTexto(h);
+        obj[headerLimpio] = fila[i] || "";
       });
       return obj;
     });
@@ -442,68 +471,85 @@ async function cargarFixture() {
   }
 }
 
-// ⭐ FUNCIÓN ACTUALIZADA PARA TUS COLUMNAS ⭐
 async function cargarTablaPosiciones() {
   try {
     const res = await fetch(urlTabla);
     const texto = await res.text();
     const filas = parseCSV(texto);
     
+    console.log("Filas CSV cargadas:", filas.length);
+    console.log("Primeras filas:", filas.slice(0, 3));
+    
     if (filas.length < 2) {
       document.getElementById("contenido").innerHTML = '<div class="sin-resultados">⚠️ No se encontraron datos en la tabla de posiciones. Verifica la URL de tu hoja de cálculo.</div>';
       return false;
     }
     
-    const headers = filas[0];
-    const datos = filas.slice(1).map(fila => {
+    const headers = filas[0].map(h => h.toLowerCase().trim());
+    const datos = [];
+    
+    for (let i = 1; i < filas.length; i++) {
+      const fila = filas[i];
+      if (fila.length < 2) continue;
+      
       let obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = fila[i] || "";
+      headers.forEach((h, idx) => {
+        if (idx < fila.length) {
+          obj[h] = limpiarTexto(fila[idx]);
+        }
       });
-      return obj;
-    });
+      
+      // Verificar que tenga al menos grupo y equipo
+      if ((obj.grupo || obj.grupo !== "") && (obj.equipo || obj.equipo !== "")) {
+        datos.push(obj);
+      }
+    }
+    
+    console.log("Datos procesados:", datos.length);
     
     todasLasTablas = {};
     
     datos.forEach(row => {
-      // Obtener grupo (puede ser 'grupo' o 'Grupo')
-      const grupo = row.grupo || row.Grupo || "A";
+      let grupo = row.grupo || row.grupo || "A";
+      grupo = grupo.toString().toUpperCase().replace(/[^A-Z]/g, '');
+      if (grupo === "") grupo = "A";
       
       if (!todasLasTablas[grupo]) {
         todasLasTablas[grupo] = [];
       }
       
-      // Mapeo EXACTO de tus columnas
       todasLasTablas[grupo].push({
-        posicion: row.pos_base || row.Pos_base || row.pos_base || "-",
-        equipo: row.equipo || row.Equipo || "Sin nombre",
-        pj: row.PJ || row.pj || "0",
-        pg: row.PG || row.pg || "0",
-        pe: row.PE || row.pe || "0",
-        pp: row.PP || row.pp || "0",
-        gf: row.GF || row.gf || "0",
-        gc: row.GC || row.gc || "0",
-        dif: row.DG || row.dg || "0",
-        puntos: row.PTS || row.pts || "0"
+        posicion: row.pos_base || row.posicion || row.pos || datos.length,
+        equipo: row.equipo || row.equipo || "Sin nombre",
+        pj: row.pj || row.pj || "0",
+        pg: row.pg || row.pg || "0",
+        pe: row.pe || row.pe || "0",
+        pp: row.pp || row.pp || "0",
+        gf: row.gf || row.gf || "0",
+        gc: row.gc || row.gc || "0",
+        dif: row.dg || row.dg || row.dif || "0",
+        puntos: row.pts || row.pts || row.puntos || "0"
       });
     });
     
-    // Ordenar cada grupo por puntos y luego por diferencia de gol
+    // Ordenar cada grupo
     for (let grupo in todasLasTablas) {
       todasLasTablas[grupo].sort((a, b) => {
-        if (parseInt(a.puntos) !== parseInt(b.puntos)) {
-          return parseInt(b.puntos) - parseInt(a.puntos);
-        }
-        return parseInt(b.dif) - parseInt(a.dif);
+        const ptsA = parseInt(a.puntos) || 0;
+        const ptsB = parseInt(b.puntos) || 0;
+        if (ptsA !== ptsB) return ptsB - ptsA;
+        
+        const difA = parseInt(a.dif) || 0;
+        const difB = parseInt(b.dif) || 0;
+        return difB - difA;
       });
       
-      // Actualizar posiciones después del ordenamiento (sobrescribe pos_base)
       todasLasTablas[grupo].forEach((equipo, idx) => {
         equipo.posicion = idx + 1;
       });
     }
     
-    console.log("Tablas cargadas:", Object.keys(todasLasTablas));
+    console.log("Grupos cargados:", Object.keys(todasLasTablas));
     return true;
   } catch (error) {
     console.error("Error cargando tabla:", error);
@@ -517,7 +563,7 @@ function mostrarTablaPosiciones() {
   const grupos = Object.keys(todasLasTablas).sort();
   
   if (grupos.length === 0) {
-    container.innerHTML = `<div class="sin-resultados">📊 No hay datos de tabla de posiciones disponibles</div>`;
+    container.innerHTML = `<div class="sin-resultados">📊 No hay datos de tabla de posiciones disponibles<br><br>Verifica que tu hoja de cálculo tenga las columnas correctas: grupo, equipo, PJ, PG, PE, PP, GF, GC, DG, PTS</div>`;
     return;
   }
   
@@ -528,7 +574,7 @@ function mostrarTablaPosiciones() {
     html += `
       <div class="tabla-grupo">
         <div class="tabla-grupo-titulo">🏆 Grupo ${grupo}</div>
-        </table>
+        <table>
           <thead>
             <tr>
               <th>Pos</th>
@@ -547,7 +593,12 @@ function mostrarTablaPosiciones() {
     `;
     
     equipos.forEach((equipo, idx) => {
-      const posClass = idx === 0 ? "posicion-1" : idx === 1 ? "posicion-2" : idx === 2 ? "posicion-3" : "";
+      let posClass = "";
+      if (idx === 0) posClass = "posicion-1";
+      else if (idx === 1) posClass = "posicion-2";
+      else if (idx === 2) posClass = "posicion-3";
+      else if (idx === 3) posClass = "posicion-4";
+      
       html += `
         <tr class="${posClass}">
           <td class="posicion"><strong>${equipo.posicion}</strong></td>
@@ -560,7 +611,7 @@ function mostrarTablaPosiciones() {
           <td>${equipo.gc}</td>
           <td>${equipo.dif}</td>
           <td><strong>${equipo.puntos}</strong></td>
-         </tr>
+        </tr>
       `;
     });
     
@@ -575,7 +626,6 @@ function mostrarTablaPosiciones() {
   container.innerHTML = html;
 }
 
-// ⭐ FUNCIÓN DE FILTRADO ACTUALIZADA PARA INCLUIR RONDA DE 32 ⭐
 function filtrarPartidos() {
   let filtrados = todosLosPartidos;
   
@@ -583,7 +633,6 @@ function filtrarPartidos() {
     if (filtroActual === "Grupo") {
       filtrados = filtrados.filter(p => p.fase && p.fase.toLowerCase().includes("grupo"));
     } else if (filtroActual === "Ronda32") {
-      // Buscar diferentes formas de escribir Ronda de 32
       filtrados = filtrados.filter(p => {
         const fase = (p.fase || "").toLowerCase();
         return fase.includes("ronda 32") || 
