@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundial 2026 - Fixture Completo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2a5298;
+            border-bottom: 3px solid #2a5298;
+        }
+
+        .content {
+            padding: 30px;
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .group-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .group-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .group-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .team-name {
+            font-weight: bold;
+            color: #1e3c72;
+            text-align: left;
+            padding-left: 15px;
+        }
+
+        .qualified {
+            background: #d4edda;
+        }
+
+        .eliminated {
+            background: #f8d7da;
+        }
+
+        .match-result {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .points {
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .goal-difference {
+            font-weight: bold;
+        }
+
+        .positive {
+            color: #28a745;
+        }
+
+        .negative {
+            color: #dc3545;
+        }
+
+        .fixture-table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .fixture-table th {
+            background: #2a5298;
+            color: white;
+        }
+
+        .fixture-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .stadium {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .input-result {
+            width: 50px;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .input-result:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 2px rgba(42,82,152,0.2);
+        }
+
+        .btn-update {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        .btn-update:hover {
+            background: #218838;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 MUNDIAL 2026</h1>
+            <p>Canadá • Estados Unidos • México</p>
+            <p>11 de Junio - 19 de Julio 2026</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('groups')">Grupos</button>
+            <button class="tab" onclick="showTab('fixture')">Fixture</button>
+            <button class="tab" onclick="showTab('knockout')">Eliminatorias</button>
+        </div>
+
+        <!-- TABLA DE GRUPOS -->
+        <div id="groups" class="content active">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #d4edda;"></div>
+                    <span>Clasificado</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f8d7da;"></div>
+                    <span>Eliminado</span>
+                </div>
+            </div>
+            
+            <div class="groups-grid" id="groupsContainer">
+                <!-- Se genera dinámicamente con JavaScript -->
+            </div>
+            
+            <button class="btn-update" onclick="updateStandings()">Actualizar Tabla</button>
+        </div>
+
+        <!-- FIXTURE COMPLETO -->
+        <div id="fixture" class="content">
+            <h2>Calendario de Partidos</h2>
+            <table class="fixture-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Grupo</th>
+                        <th>Local</th>
+                        <th>Resultado</th>
+                        <th>Visitante</th>
+                        <th>Estadio</th>
+                    </tr>
+                </thead>
+                <tbody id="fixtureBody">
+                    <!-- Se genera dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ELIMINATORIAS -->
+        <div id="knockout" class="content">
+            <h2>Fase Eliminatoria</h2>
+            <div id="knockoutBracket">
+                <!-- Se genera dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de los grupos
+        const groups = {
+            'A': ['México', 'Países Bajos', 'Senegal', 'Nueva Zelanda'],
+            'B': ['Argentina', 'Inglaterra', 'Corea del Sur', 'Arabia Saudita'],
+            'C': ['Brasil', 'Alemania', 'Japón', 'Costa Rica'],
+            'D': ['Francia', 'Uruguay', 'Marruecos', 'Canadá'],
+            'E': ['España', 'Croacia', 'Egipto', 'Australia'],
+            'F': ['Portugal', 'Colombia', 'Nigeria', 'China'],
+            'G': ['Italia', 'Bélgica', 'Ghana', 'Panamá'],
+            'H': ['Estados Unidos', 'Dinamarca', 'Camerún', 'Chile'],
+            'I': ['Suiza', 'Serbia', 'Túnez', 'Emiratos Árabes'],
+            'J': ['Perú', 'Ecuador', 'Polonia', 'Qatar'],
+            'K': ['Suecia', 'Paraguay', 'Costa de Marfil', 'Irán'],
+            'L': ['Noruega', 'Turquía', 'Argelia', 'Jamaica']
+        };
+
+        // Simulación de resultados (para demo)
+        const sampleResults = {
+            'A': [
+                [2,1], [3,0], [1,1], [2,0], [0,3], [1,2]
+            ],
+            'B': [
+                [3,0], [2,1], [1,0], [2,2], [0,1], [3,1]
+            ]
+        };
+
+        // Generar tabla de grupos
+        function generateGroupTables() {
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = '';
+
+            for (const [group, teams] of Object.entries(groups)) {
+                const groupCard = document.createElement('div');
+                groupCard.className = 'group-card';
+                
+                let tableHTML = `
+                    <div class="group-title">GRUPO ${group}</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Equipo</th>
+                                <th>PJ</th>
+                                <th>G</th>
+                                <th>E</th>
+                                <th>P</th>
+                                <th>GF</th>
+                                <th>GC</th>
+                                <th>DG</th>
+                                <th>PTS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                teams.forEach((team, index) => {
+                    // Datos simulados para demo
+                    const played = Math.floor(Math.random() * 3);
+                    const won = Math.floor(Math.random() * (played + 1));
+                    const drawn = Math.floor(Math.random() * (played - won + 1));
+                    const lost = played - won - drawn;
+                    const gf = Math.floor(Math.random() * 8);
+                    const gc = Math.floor(Math.random() * 6);
+                    const dg = gf - gc;
+                    const points = won * 3 + drawn;
+
+                    const qualification = points >= 4 ? 'qualified' : points <= 1 && played === 3 ? 'eliminated' : '';
+                    
+                    tableHTML += `
+                        <tr class="${qualification}">
+                            <td class="team-name">${team}</td>
+                            <td>${played}</td>
+                            <td>${won}</td>
+                            <td>${drawn}</td>
+                            <td>${lost}</td>
+                            <td>${gf}</td>
+                            <td>${gc}</td>
+                            <td class="goal-difference ${dg > 0 ? 'positive' : dg < 0 ? 'negative' : ''}">${dg > 0 ? '+' + dg : dg}</td>
+                            <td class="points">${points}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                groupCard.innerHTML = tableHTML;
+                container.appendChild(groupCard);
+            }
+        }
+
+        // Generar fixture
+        function generateFixture() {
+            const fixtureBody = document.getElementById('fixtureBody');
+            const stadiums = ['Estadio Azteca', 'MetLife Stadium', 'Rose Bowl', 'Wembley', 'Maracaná', 'Camp Nou'];
+            fixtureBody.innerHTML = '';
+
+            let matchCount = 0;
+            for (const [group, teams] of Object.entries(groups)) {
+                for (let i = 0; i < teams.length; i++) {
+                    for (let j = i + 1; j < teams.length; j++) {
+                        matchCount++;
+                        const date = new Date(2026, 5, 11 + Math.floor(matchCount / 4));
+                        const stadium = stadiums[Math.floor(Math.random() * stadiums.length)];
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${date.toLocaleDateString('es-ES')}</td>
+                            <td>${['16:00', '19:00', '21:00'][Math.floor(Math.random() * 3)]}</td>
+                            <td><strong>Grupo ${group}</strong></td>
+                            <td>${teams[i]}</td>
+                            <td>
+                                <input class="input-result" type="number" min="0" placeholder="-" style="width: 40px;"> 
+                                - 
+                                <input class="input-result" type="number" min="0" placeholder="-" style="width: 40px;">
+                            </td>
+                            <td>${teams[j]}</td>
+                            <td class="stadium">${stadium}</td>
+                        `;
+                        fixtureBody.appendChild(row);
+                    }
+                }
+            }
+        }
+
+        // Generar bracket de eliminatorias
+        function generateKnockout() {
+            const bracket = document.getElementById('knockoutBracket');
+            bracket.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3>Dieciseisavos de Final</h3>
+                    <p style="color: #6c757d;">Los equipos se completarán automáticamente según los resultados de la fase de grupos</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px;">
+                        ${Array(16).fill().map((_, i) => `
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                <strong>Partido ${i + 1}</strong><br>
+                                <span style="color: #6c757d;">Por definir</span> vs 
+                                <span style="color: #6c757d;">Por definir</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Cambiar pestañas
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Actualizar posiciones (simulado)
+        function updateStandings() {
+            alert('Tabla actualizada correctamente (simulación)');
+            generateGroupTables();
+        }
+
+        // Inicializar todo
+        document.addEventListener('DOMContentLoaded', () => {
+            generateGroupTables();
+            generateFixture();
+            generateKnockout();
+        });
+    </script>
+</body>
+</html>
